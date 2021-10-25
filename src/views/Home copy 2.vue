@@ -37,16 +37,14 @@
                   <Option value="Btns">按钮组</Option>
                 </Select>
               </FormItem>
-              <FormItem label="位置" prop="">
-                <RadioGroup v-model="item.position">
-                  <Radio label="start">居左</Radio>
-                  <Radio label="center">居中</Radio>
-                  <Radio label="end">居右</Radio>
-                  <!-- <Radio label="space-around">spaceAround</Radio>
-                  <Radio label="space-between">spaceBetween</Radio> -->
-                </RadioGroup>
-              </FormItem>
-              <div v-if="item.type === 'Input'">
+              <div v-show="item.type === 'Input'">
+                <FormItem label="位置" prop="">
+                  <RadioGroup v-model="item.position">
+                    <Radio label="left">居左</Radio>
+                    <Radio label="center">居中</Radio>
+                    <Radio label="right">居右</Radio>
+                  </RadioGroup>
+                </FormItem>
                 <FormItem label="label" prop="">
                   <Input v-model="item.label" />
                 </FormItem>
@@ -62,29 +60,6 @@
                     <Radio label="2">需要</Radio>
                   </RadioGroup>
                 </FormItem>
-              </div>
-              <div v-if="item.type === 'Btns'">
-                <FormItem label="按钮个数" prop="">
-                  <Input-Number v-model="item.count" />
-                </FormItem>
-                <div v-for="(btn, index) in item.btns" :key="'btn' + index">
-                  <div>第{{index + 1}}个按钮</div>
-                  <FormItem label="按钮名称" prop="">
-                    <Input v-model="btn.label" />
-                  </FormItem>
-                  <FormItem label="按钮类型" prop="">
-                    <Select v-model="btn.type">
-                      <Option value="warning">橙色</Option>
-                      <Option value="primary">蓝色</Option>
-                      <Option value="success">绿色</Option>
-                      <Option value="error">红色</Option>
-                      <Option value="0">默认（无）</Option>
-                    </Select>
-                  </FormItem>
-                  <FormItem label="方法名称" prop="">
-                    <Input v-model="btn.fun" />
-                  </FormItem>
-                </div>
               </div>
             </div>
           </div>
@@ -111,8 +86,7 @@
         </FormItem> -->
       </Form>
       <Row type="flex" justify="center">
-        <Button type="warning" @click="createPage" :loading="isLoadCreate">生成页面</Button>
-        <Button class="ml10" type="success" @click="copy" :loading="isLoadCopy">复制到剪切板</Button>
+        <Button type="warning" @click="createPage">生成页面</Button>
       </Row>
     </div>
     <div class="content">
@@ -122,8 +96,7 @@
   </div>
 </template>
 <script>
-import { utils } from '@/assets/js/common.js'
-// const inputObj = {
+// const tempObj = {
 //   position: 'left', // 摆放方式：居左；居中；居右
 //   type: 'Input', // 存放组件：单选，多选，输入，下拉，层级，时间
 //   label: '', // 标题名称
@@ -132,19 +105,6 @@ import { utils } from '@/assets/js/common.js'
 //     canClear: '2',
 //     vModel: ''
 //   }
-// }
-// const btnsObj = {
-//   position: 'left',
-//   type: 'Btns',
-//   label: '',
-//   count: 3, // 按钮个数
-//   btns: [
-//     {
-//       label: '', // 按钮名称
-//       type: '', // 按钮类型
-//       fun: '', // 按钮方法名
-//     }
-//   ]
 // }
 export default {
   name: 'createPage',
@@ -187,22 +147,14 @@ export default {
             }
           },
           {
-            position: 'end',
-            type: 'Btns',
+            position: 'left',
+            type: 'Input',
             label: '测试4',
-            count: 2,
-            btns: [
-              {
-                label: '查询',
-                type: 'success',
-                fun: 'queryData'
-              },
-              {
-                label: '新建',
-                type: 'primary',
-                fun: 'goCreate'
-              }
-            ]
+            input: {
+              placeholder: '测4',
+              canClear: '2',
+              vModel: 'test4'
+            }
           }
         ],
         tHead: `
@@ -220,26 +172,11 @@ export default {
         needPageTwo: ''
       },
       rules: {},
-      htmlStr: '',
-      isLoadCreate: false,
-      isLoadCopy: false,
-      btnsGroup: [] // 按钮数据
+      htmlStr: ''
     }
   },
   methods: {
-    async copy () {
-      this.isLoadCopy = true
-      try {
-        await utils.copyToClipboard(this.htmlStr)
-        console.log('复制成功')
-      } catch (error) {
-        console.log(error)
-      } finally {
-        this.isLoadCopy = false
-      }
-    },
     createPage () {
-      this.isLoadCreate = true
       // 单一表格
       const tempAllCols = JSON.parse(JSON.stringify(this.form.allCols))
       if (this.form.tableType === 'one') {
@@ -261,21 +198,6 @@ export default {
                       str += ' clearable'
                     }
                     str += ' />'
-                  } else if (item.type === 'Btns') { // 按钮列
-                    if (item.position !== 'start') {
-                      str += `<Row type="flex" justify="${item.position}">`
-                    }
-                    item.btns.forEach(btn => {
-                      str += '<Button class="ml5"'
-                      if (btn.type !== '') {
-                        str += `type="${btn.type}"`
-                      }
-                      str += `@click="${btn.fun}"`
-                      str += `>${btn.label}</Button>`
-                    })
-                    if (item.position !== 'start') {
-                      str += '</Row>'
-                    }
                   }
                   str += '</Form-item>'
                 }
@@ -297,8 +219,7 @@ export default {
           str += '<gk-admin-pages2 class="mt10" ref="pages" @changeSize="changeSize" @changePage="changePage"></gk-admin-pages2>'
         }
         str += '</div></template>'
-        str += `<script>
-        export default {`
+        str += '<script>'
         str += 'components: {},'
         str += 'props: {},'
         if (this.form.tableType === 'one') { // 单一表格
@@ -306,23 +227,17 @@ export default {
           str += 'return {'
           let hasBtns = false // 是否有操作按钮
           str += 'formList: {'
-          this.btnsGroup = []
           if (this.form.allCols.length > 0) {
-            console.log(this.form.allCols)
-            this.form.allCols.forEach((item, index) => {
+            this.form.allCols.forEach(item => {
               if (item.type === 'Input') { // TODO 添加组件判断
-                str += `${item.input.vModel}: ''`
-                if (index !== this.form.allCols.length - 1) {
-                  str += ','
-                }
+                str += `${item.vModel}`
               }
               if (item.type === 'Btns') { // 有按钮组
-                this.btnsGroup.push(item)
                 hasBtns = true
               }
             })
           }
-          str += '},'
+          str += '}'
           if (this.form.needPageOne === '2') { // 分页
             str += `currentPage: 1,
             pageSize: 10`
@@ -330,9 +245,11 @@ export default {
           str += '}'
           str += '},'
           str += 'methods: {'
-          let pageStr = ''
+          if (hasBtns) {
+
+          }
           if (this.form.needPageOne === '2') { // 分页
-            pageStr += `
+            str += `
               changePage (pageNum) {
                 this.currentPage = pageNum
                 this.query()
@@ -367,41 +284,25 @@ export default {
               }
             `
           }
-          if (hasBtns) { // 有查询等按钮
-            this.btnsGroup.forEach(btns => {
-              btns.btns.forEach((btn, index) => {
-                // 是否方法名在页面中出现，出现不写入，没出现写入。
-                // TODO !!!方法判断不严谨
-                if (pageStr.indexOf(btn.fun) === -1) {
-                  str += `${btn.fun}() {},`
-                }
-              })
-            })
-          }
-          str += pageStr
           str += '},'
           str += `
-            mounted () {
-              this.queryData()
-            },
+            mounted () {},
             created () {}
           `
         }
-        // eslint-disable-next-line
-        str += `}<\/script>`
+        str += '</script><style scoped lang="less"></style>'
         this.htmlStr = ''
         this.htmlStr = str
-        this.isLoadCreate = false
         console.log(str)
       }
     },
     createCols () {
-      // if (this.form.rows > 0 && this.form.cols > 0) {
-      //   this.form.allCols = []
-      //   for (let i = 0; i < (this.form.rows * this.form.cols); i++) {
-      //     // this.form.allCols.push(JSON.parse(JSON.stringify(tempObj)))
-      //   }
-      // }
+      if (this.form.rows > 0 && this.form.cols > 0) {
+        this.form.allCols = []
+        for (let i = 0; i < (this.form.rows * this.form.cols); i++) {
+          // this.form.allCols.push(JSON.parse(JSON.stringify(tempObj)))
+        }
+      }
     }
   }
 }
