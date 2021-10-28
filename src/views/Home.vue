@@ -116,13 +116,17 @@
       </Row>
     </div>
     <div class="content">
-      预览
-      <div>{{htmlStr}}</div>
+      <code-mirror :code="htmlStr"></code-mirror>
     </div>
   </div>
 </template>
 <script>
+import CodeMirror from '@/components/codemirror'
+// import parserBabel from '@babel/parser'
 import { utils } from '@/assets/js/common.js'
+// import prettier from 'prettier/standalone'
+// import parserBabel from 'prettier/parser-babel'
+
 // const inputObj = {
 //   position: 'left', // 摆放方式：居左；居中；居右
 //   type: 'Input', // 存放组件：单选，多选，输入，下拉，层级，时间
@@ -148,6 +152,9 @@ import { utils } from '@/assets/js/common.js'
 // }
 export default {
   name: 'createPage',
+  components: {
+    CodeMirror
+  },
   data () {
     return {
       form: {
@@ -390,9 +397,14 @@ export default {
         // eslint-disable-next-line
         str += `}<\/script>`
         this.htmlStr = ''
+        console.log('str::', str)
+        // this.htmlStr = prettier.format(str, {
+        //   semi: false,
+        //   parser: 'babel',
+        //   plugins: [parserBabel]
+        // })
         this.htmlStr = str
         this.isLoadCreate = false
-        console.log(str)
       }
     },
     createCols () {
